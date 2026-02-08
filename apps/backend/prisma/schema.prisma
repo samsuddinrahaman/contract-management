@@ -1,0 +1,96 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum FieldType {
+  TEXT
+  DATE
+  SIGNATURE
+  CHECKBOX
+}
+
+enum ContractStatus {
+  CREATED
+  APPROVED
+  SENT
+  SIGNED
+  LOCKED
+  REVOKED
+}
+
+model Blueprint {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  fields      BlueprintField[]
+  contracts   Contract[]
+  createdAt   DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime       @updatedAt @db.Timestamptz(6)
+
+  @@index([createdAt])
+  @@map("blueprints")
+}
+
+model BlueprintField {
+  id          String      @id @default(uuid())
+  blueprintId String
+  blueprint   Blueprint   @relation(fields: [blueprintId], references: [id], onDelete: Cascade)
+  type        FieldType
+  label       String
+  positionX   Int         @default(0)
+  positionY   Int         @default(0)
+  required    Boolean     @default(false)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(6)
+
+  @@index([blueprintId])
+  @@map("blueprint_fields")
+}
+
+model Contract {
+  id          String         @id @default(uuid())
+  name        String
+  blueprintId String
+  blueprint   Blueprint      @relation(fields: [blueprintId], references: [id])
+  status      ContractStatus @default(CREATED)
+  values      ContractValue[]
+  createdAt   DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime       @updatedAt @db.Timestamptz(6)
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([blueprintId])
+  @@map("contracts")
+}
+
+model ContractValue {
+  id         String   @id @default(uuid())
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  fieldId    String
+  value      String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([contractId, fieldId])
+  @@index([contractId])
+  @@map("contract_values")
+}
+
+model ContractAuditLog {
+  id         String         @id @default(uuid())
+  contractId String
+  fromStatus ContractStatus
+  toStatus   ContractStatus
+  reason     String?
+  createdAt  DateTime       @default(now()) @db.Timestamptz(6)
+
+  @@index([contractId])
+  @@map("contract_audit_logs")
+}
