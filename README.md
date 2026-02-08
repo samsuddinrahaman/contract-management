@@ -1,8 +1,6 @@
 # Contract Management Platform
 
-A full-stack contract management system with blueprint templates, contract lifecycle management, and a clean dashboard interface. Built with the latest 2026 tech stack.
-
-![Dashboard Preview](https://via.placeholder.com/800x400?text=Dashboard+Preview)
+A full-stack contract management system with blueprint templates, contract lifecycle management, and a clean dashboard interface.
 
 ## Features
 
